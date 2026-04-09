@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azure OpenAI Quota Tier 查询</title>
+    <style>
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --bg: #f3f2f1;
+            --card-bg: #fff;
+            --text: #323130;
+            --text-secondary: #605e5c;
+            --border: #e1dfdd;
+            --success: #107c10;
+            --warning: #ffb900;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            background: var(--primary);
+            color: #fff;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header .user-info { display: flex; align-items: center; gap: 12px; }
+        .header .user-info span { font-size: 14px; }
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #fff;
+            color: var(--primary);
+        }
+        .btn-primary:hover { background: #e8e8e8; }
+        .btn-action {
+            background: var(--primary);
+            color: #fff;
+            border: 1px solid var(--primary-dark);
+        }
+        .btn-action:hover { background: var(--primary-dark); }
+        .btn-danger {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .btn-danger:hover { background: rgba(255,255,255,0.1); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 1.6px 3.6px rgba(0,0,0,.13), 0 0.3px 0.9px rgba(0,0,0,.1);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header h2 { font-size: 18px; font-weight: 600; }
+        .card-body { padding: 24px; }
+        .login-container {
+            text-align: center;
+            padding: 60px 24px;
+        }
+        .login-container h2 { font-size: 28px; margin-bottom: 12px; }
+        .login-container p { color: var(--text-secondary); margin-bottom: 32px; font-size: 16px; }
+        .login-container .btn { padding: 12px 32px; font-size: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .tier-badge {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #50e6ff);
+            margin: 12px 0;
+        }
+        .tier-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .tier-detail { color: var(--text-secondary); font-size: 14px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            background: #faf9f8;
+            padding: 10px 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        tr:hover td { background: #faf9f8; }
+        .table-wrapper {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error { color: #d13438; background: #fde7e9; padding: 12px 16px; border-radius: 4px; margin: 12px 0; }
+        .hidden { display: none; }
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+        .filter-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-dot.green { background: var(--success); }
+        .status-dot.yellow { background: var(--warning); }
+        .ref-link {
+            font-size: 13px;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .ref-link:hover { text-decoration: underline; }
+        @media (max-width: 768px) {
+            .container { padding: 12px; }
+            .header { padding: 12px 16px; flex-direction: column; gap: 8px; }
+            .filter-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🔍 Azure OpenAI Quota Tier 查询工具</h1>
+    <div class="user-info" id="userInfo">
+        <span id="userDisplay"></span>
+        <button class="btn btn-primary" id="loginBtn" onclick="signIn()">登录 Azure</button>
+        <button class="btn btn-danger hidden" id="logoutBtn" onclick="signOut()">退出</button>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Login Prompt -->
+    <div id="loginPrompt" class="card">
+        <div class="login-container">
+            <h2>Azure OpenAI Quota Tier 查询</h2>
+            <p>登录您的 Azure 账户，查看订阅的 AOAI Quota Tier 及主要模型配额信息</p>
+            <button class="btn btn-action" onclick="signIn()" style="font-size:16px; padding:12px 40px;">
+                🔐 使用 Microsoft 账户登录
+            </button>
+            <div style="margin-top:24px; color:var(--text-secondary); font-size:13px;">
+                参考文档：
+                <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1" target="_blank">
+                    Azure OpenAI Quotas and Limits
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden until login) -->
+    <div id="mainContent" class="hidden">
+        <!-- Subscription Selector -->
+        <div class="card">
+            <div class="card-header">
+                <h2>选择订阅</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="subscriptionSelect">Azure 订阅</label>
+                    <select id="subscriptionSelect" onchange="onSubscriptionChange()">
+                        <option value="">-- 请选择订阅 --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tier Info -->
+        <div id="tierSection" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Quota Tier 信息</h2>
+                    <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1#quota-tiers" target="_blank">了解更多 →</a>
+                </div>
+                <div class="card-body">
+                    <div id="tierLoading" class="loading">
+                        <div class="spinner"></div>
+                        <div>正在查询 Tier 信息...</div>
+                    </div>
+                    <div id="tierResult" class="hidden">
+                        <div class="tier-info">
+                            <div>
+                                <div style="font-size:14px; color:var(--text-secondary); margin-bottom:4px;">当前 Quota Tier</div>
+                                <div class="tier-badge" id="tierBadge"></div>
+                            </div>
+                            <div>
+                                <div class="tier-detail"><strong>升级策略：</strong><span id="tierPolicy"></span></div>
+                                <div class="tier-detail"><strong>订阅 ID：</strong><span id="tierSubId"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tierError" class="hidden"></div>
+                </div>
+            </div>
+
+            <!-- Quota Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>模型 Quota 配额</h2>
+                </div>
+                <div class="card-body">
+                    <div class="filter-row" style="margin-bottom:16px;">
+                        <div class="form-group">
+                            <label for="modelFilter">筛选模型</label>
+                            <input type="text" id="modelFilter" placeholder="输入模型名称..." oninput="filterTable()">
+                        </div>
+                        <div class="form-group">
+                            <label for="deploymentFilter">部署类型</label>
+                            <select id="deploymentFilter" onchange="filterTable()">
+                                <option value="">全部</option>
+                                <option value="GlobalStandard">Global Standard</option>
+                                <option value="DataZoneStandard">Data Zone Standard</option>
+                                <option value="Standard">Standard</option>
+                                <option value="GlobalBatch">Global Batch</option>
+                                <option value="DataZoneBatch">Data Zone Batch</option>
+                                <option value="ProvisionedManaged">Provisioned Managed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="quotaLoading" class="loading">
+                        <div class="spinner"></div>
+                        <div>正在查询模型配额...</div>
+                    </div>
+                    <div id="quotaTableWrapper" class="table-wrapper hidden">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>模型名称</th>
+                                    <th>部署类型</th>
+                                    <th>已用配额 (TPM)</th>
+                                    <th>配额上限 (TPM)</th>
+                                    <th>使用率</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quotaTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="quotaEmpty" class="hidden" style="text-align:center; padding:24px; color:var(--text-secondary);">
+                        该订阅下暂无 AOAI 模型配额数据
+                    </div>
+                    <div id="quotaError" class="hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MSAL.js v2 -->
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script>
+    const CLIENT_ID = "{{ client_id }}";
+    const TENANT_ID = "{{ tenant_id }}";
+    const REDIRECT_URI = window.location.origin;
+
+    const msalConfig = {
+        auth: {
+            clientId: CLIENT_ID,
+            authority: `https://login.microsoftonline.com/${TENANT_ID}`,
+            redirectUri: REDIRECT_URI,
+        },
+        cache: {
+            cacheLocation: "sessionStorage",
+            storeAuthStateInCookie: false,
+        },
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    const managementScope = { scopes: ["https://management.azure.com/.default"] };
+
+    let accessToken = null;
+    let allQuotaData = [];
+
+    // Check if already logged in
+    msalInstance.initialize().then(() => {
+        msalInstance.handleRedirectPromise().then((resp) => {
+            if (resp) {
+                handleLoginSuccess(resp);
+            } else {
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    msalInstance.acquireTokenSilent({
+                        ...managementScope,
+                        account: accounts[0]
+                    }).then(handleLoginSuccess).catch(() => {});
+                }
+            }
+        });
+    });
+
+    function signIn() {
+        msalInstance.loginPopup(managementScope)
+            .then(handleLoginSuccess)
+            .catch(err => {
+                console.error("Login failed:", err);
+                if (err.errorCode !== "user_cancelled") {
+                    alert("登录失败：" + err.message);
+                }
+            });
+    }
+
+    function signOut() {
+        msalInstance.logoutPopup();
+    }
+
+    function handleLoginSuccess(response) {
+        accessToken = response.accessToken;
+        const account = response.account;
+        document.getElementById("userDisplay").textContent = account.name || account.username;
+        document.getElementById("loginBtn").classList.add("hidden");
+        document.getElementById("logoutBtn").classList.remove("hidden");
+        document.getElementById("loginPrompt").classList.add("hidden");
+        document.getElementById("mainContent").classList.remove("hidden");
+        loadSubscriptions();
+    }
+
+    async function azureGet(url) {
+        if (!accessToken) {
+            // Try silent token refresh
+            const accounts = msalInstance.getAllAccounts();
+            if (accounts.length > 0) {
+                const resp = await msalInstance.acquireTokenSilent({
+                    ...managementScope,
+                    account: accounts[0]
+                });
+                accessToken = resp.accessToken;
+            }
+        }
+        const response = await fetch(url, {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`API Error ${response.status}: ${errBody}`);
+        }
+        return response.json();
+    }
+
+    async function loadSubscriptions() {
+        try {
+            const data = await azureGet("https://management.azure.com/subscriptions?api-version=2022-12-01");
+            const sel = document.getElementById("subscriptionSelect");
+            sel.innerHTML = '<option value="">-- 请选择订阅 --</option>';
+            (data.value || []).forEach(sub => {
+                const opt = document.createElement("option");
+                opt.value = sub.subscriptionId;
+                opt.textContent = `${sub.displayName} (${sub.subscriptionId})`;
+                sel.appendChild(opt);
+            });
+        } catch (err) {
+            console.error("Failed to load subscriptions:", err);
+            alert("加载订阅列表失败：" + err.message);
+        }
+    }
+
+    function onSubscriptionChange() {
+        const subId = document.getElementById("subscriptionSelect").value;
+        if (!subId) {
+            document.getElementById("tierSection").classList.add("hidden");
+            return;
+        }
+        document.getElementById("tierSection").classList.remove("hidden");
+        loadTierInfo(subId);
+        loadQuotaInfo(subId);
+    }
+
+    async function loadTierInfo(subscriptionId) {
+        const loadingEl = document.getElementById("tierLoading");
+        const resultEl = document.getElementById("tierResult");
+        const errorEl = document.getElementById("tierError");
+
+        loadingEl.classList.remove("hidden");
+        resultEl.classList.add("hidden");
+        errorEl.classList.add("hidden");
+
+        try {
+            const data = await azureGet(
+                `https://management.azure.com/subscriptions/${encodeURIComponent(subscriptionId)}/providers/Microsoft.CognitiveServices/quotaTiers/default?api-version=2025-10-01-preview`
+            );
+            const tier = data.properties?.currentTier || data.properties?.tier || "未知";
+            const policy = data.properties?.tierUpgradePolicy || "AutoUpgrade";
+
+            document.getElementById("tierBadge").textContent = `Tier ${tier}`;
+            document.getElementById("tierPolicy").textContent =
+                policy === "NoAutoUpgrade" ? "手动升级（已禁用自动升级）" : "自动升级";
+            document.getElementById("tierSubId").textContent = subscriptionId;
+
+            loadingEl.classList.add("hidden");
+            resultEl.classList.remove("hidden");
+        } catch (err) {
+            loadingEl.classList.add("hidden");
+            // Tier API may not be available — show fallback
+            if (err.message.includes("404") || err.message.includes("NotFound")) {
+                document.getElementById("tierBadge").textContent = "未分配";
+                document.getElementById("tierPolicy").textContent = "—";
+                document.getElementById("tierSubId").textContent = subscriptionId;
+                resultEl.classList.remove("hidden");
+            } else {
+                errorEl.innerHTML = `<div class="error">查询 Tier 信息失败：${escapeHtml(err.message)}</div>`;
+                errorEl.classList.remove("hidden");
+            }
+        }
+    }
+
+    async function loadQuotaInfo(subscriptionId) {
+        const loadingEl = document.getElementById("quotaLoading");
+        const tableWrapper = document.getElementById("quotaTableWrapper");
+        const emptyEl = document.getElementById("quotaEmpty");
+        const errorEl = document.getElementById("quotaError");
+
+        loadingEl.classList.remove("hidden");
+        tableWrapper.classList.add("hidden");
+        emptyEl.classList.add("hidden");
+        errorEl.classList.add("hidden");
+        allQuotaData = [];
+
+        try {
+            // Query all AOAI usages across all Cognitive Services accounts
+            const url = `https://management.azure.com/subscriptions/${encodeURIComponent(subscriptionId)}/providers/Microsoft.CognitiveServices/locations/eastus/usages?api-version=2024-10-01`;
+            let usages = [];
+
+            // Try to get usages from multiple regions
+            const regions = ["eastus", "westus", "westeurope", "southcentralus", "northcentralus",
+                             "eastus2", "westus2", "westus3", "canadaeast", "uksouth",
+                             "japaneast", "australiaeast", "swedencentral", "switzerlandnorth"];
+
+            const regionPromises = regions.map(async (region) => {
+                try {
+                    const regionUrl = `https://management.azure.com/subscriptions/${encodeURIComponent(subscriptionId)}/providers/Microsoft.CognitiveServices/locations/${region}/usages?api-version=2024-10-01`;
+                    const data = await azureGet(regionUrl);
+                    return (data.value || []).map(u => ({ ...u, region }));
+                } catch {
+                    return [];
+                }
+            });
+
+            const regionResults = await Promise.all(regionPromises);
+            usages = regionResults.flat();
+
+            // Filter for OpenAI model quotas
+            const openaiUsages = usages.filter(u => {
+                const name = (u.name?.value || "").toLowerCase();
+                return name.includes("openai") || name.includes("gpt") ||
+                       name.includes("o1") || name.includes("o3") || name.includes("o4") ||
+                       name.includes("dall-e") || name.includes("whisper") ||
+                       name.includes("tts") || name.includes("embedding") ||
+                       name.includes("codex") || name.includes("realtime");
+            });
+
+            if (openaiUsages.length === 0) {
+                // Fallback: try listing CognitiveServices accounts and their models
+                await loadQuotaFromAccounts(subscriptionId);
+                return;
+            }
+
+            allQuotaData = openaiUsages.map(u => {
+                const parts = (u.name?.value || "").split(".");
+                const modelName = parts.length > 1 ? parts.slice(1).join(".") : u.name?.value || "—";
+                const deploymentType = parts[0] || "—";
+                return {
+                    model: u.name?.localizedValue || modelName,
+                    deploymentType: deploymentType,
+                    used: u.currentValue || 0,
+                    limit: u.limit || 0,
+                    unit: u.unit || "Count",
+                    region: u.region || "—"
+                };
+            });
+
+            renderQuotaTable();
+        } catch (err) {
+            loadingEl.classList.add("hidden");
+            errorEl.innerHTML = `<div class="error">查询配额信息失败：${escapeHtml(err.message)}</div>`;
+            errorEl.classList.remove("hidden");
+        }
+    }
+
+    async function loadQuotaFromAccounts(subscriptionId) {
+        const loadingEl = document.getElementById("quotaLoading");
+        const tableWrapper = document.getElementById("quotaTableWrapper");
+        const emptyEl = document.getElementById("quotaEmpty");
+        const errorEl = document.getElementById("quotaError");
+
+        try {
+            // List all Cognitive Services accounts
+            const accountsData = await azureGet(
+                `https://management.azure.com/subscriptions/${encodeURIComponent(subscriptionId)}/providers/Microsoft.CognitiveServices/accounts?api-version=2024-10-01`
+            );
+            const accounts = (accountsData.value || []).filter(
+                a => a.kind === "OpenAI" || a.kind === "AIServices"
+            );
+
+            if (accounts.length === 0) {
+                loadingEl.classList.add("hidden");
+                emptyEl.classList.remove("hidden");
+                return;
+            }
+
+            // For each account, list deployments
+            const deploymentPromises = accounts.map(async (account) => {
+                try {
+                    const deploymentsUrl = `https://management.azure.com${account.id}/deployments?api-version=2024-10-01`;
+                    const dData = await azureGet(deploymentsUrl);
+                    return (dData.value || []).map(d => ({
+                        model: d.properties?.model?.name || "—",
+                        deploymentType: d.properties?.model?.skuName || d.sku?.name || "—",
+                        used: d.properties?.rateLimits?.[0]?.count || 0,
+                        limit: d.properties?.rateLimits?.[0]?.limit || d.sku?.capacity || 0,
+                        unit: "TPM",
+                        region: account.location || "—",
+                        deploymentName: d.name || "—",
+                        version: d.properties?.model?.version || "—"
+                    }));
+                } catch {
+                    return [];
+                }
+            });
+
+            const results = await Promise.all(deploymentPromises);
+            allQuotaData = results.flat();
+
+            if (allQuotaData.length === 0) {
+                // Last resort: show subscription-level model quota from usages
+                loadingEl.classList.add("hidden");
+                emptyEl.innerHTML = "该订阅下未找到 AOAI 部署。请确认订阅中已创建 Azure OpenAI 资源和模型部署。";
+                emptyEl.classList.remove("hidden");
+                return;
+            }
+
+            renderQuotaTable();
+        } catch (err) {
+            loadingEl.classList.add("hidden");
+            errorEl.innerHTML = `<div class="error">查询配额信息失败：${escapeHtml(err.message)}</div>`;
+            errorEl.classList.remove("hidden");
+        }
+    }
+
+    function renderQuotaTable() {
+        const loadingEl = document.getElementById("quotaLoading");
+        const tableWrapper = document.getElementById("quotaTableWrapper");
+        const emptyEl = document.getElementById("quotaEmpty");
+
+        loadingEl.classList.add("hidden");
+
+        if (allQuotaData.length === 0) {
+            emptyEl.classList.remove("hidden");
+            return;
+        }
+
+        tableWrapper.classList.remove("hidden");
+        filterTable();
+    }
+
+    function filterTable() {
+        const modelFilter = document.getElementById("modelFilter").value.toLowerCase();
+        const deploymentFilter = document.getElementById("deploymentFilter").value;
+
+        const filtered = allQuotaData.filter(item => {
+            const matchModel = !modelFilter || item.model.toLowerCase().includes(modelFilter);
+            const matchDeploy = !deploymentFilter || item.deploymentType.includes(deploymentFilter);
+            return matchModel && matchDeploy;
+        });
+
+        const tbody = document.getElementById("quotaTableBody");
+        tbody.innerHTML = filtered.map(item => {
+            const pct = item.limit > 0 ? ((item.used / item.limit) * 100).toFixed(1) : "—";
+            const pctNum = parseFloat(pct);
+            let barColor = "var(--success)";
+            if (pctNum > 80) barColor = "#d13438";
+            else if (pctNum > 50) barColor = "var(--warning)";
+
+            const usedFormatted = formatNumber(item.used);
+            const limitFormatted = formatNumber(item.limit);
+
+            return `<tr>
+                <td><strong>${escapeHtml(item.model)}</strong>${item.version && item.version !== '—' ? `<br><small style="color:var(--text-secondary)">${escapeHtml(item.version)}</small>` : ''}</td>
+                <td>${escapeHtml(item.deploymentType)}${item.region && item.region !== '—' ? `<br><small style="color:var(--text-secondary)">${escapeHtml(item.region)}</small>` : ''}</td>
+                <td>${usedFormatted}</td>
+                <td>${limitFormatted}</td>
+                <td>
+                    ${pct !== "—" ? `
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div style="flex:1;background:var(--border);border-radius:4px;height:8px;overflow:hidden;">
+                            <div style="width:${Math.min(pctNum, 100)}%;height:100%;background:${barColor};border-radius:4px;"></div>
+                        </div>
+                        <span style="font-size:13px;min-width:48px;text-align:right;">${pct}%</span>
+                    </div>` : '—'}
+                </td>
+            </tr>`;
+        }).join("");
+    }
+
+    function formatNumber(n) {
+        if (n === 0) return "0";
+        if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+        if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+        return n.toString();
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement("div");
+        div.textContent = str;
+        return div.innerHTML;
+    }
+</script>
+
+</body>
+</html>
