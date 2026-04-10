@@ -23,15 +23,21 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip . -x '.git/*' '.github/*' '__pycache__/*' '*.pyc' 'venv/*'
+        run: zip -r release.zip . -x '.git/*' '.github/*' '__pycache__/*' '*.pyc' 'venv/*' 'setup.sh' '.env' '.DS_Store'
 
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Web App
+      - name: Configure Web App
         run: |
-          az webapp deploy --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+          az webapp config set --name ${{ secrets.AZURE_WEBAPP_NAME }} \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --src-path release.zip --type zip
+            --startup-file "gunicorn --bind=0.0.0.0:8000 --timeout 120 app:app"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          package: release.zip
