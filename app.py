@@ -1,7 +1,12 @@
 import os
+from datetime import datetime, timezone, timedelta
 from flask import Flask, render_template
 
 app = Flask(__name__)
+
+# Build time in Beijing time (UTC+8), captured at startup
+_beijing_tz = timezone(timedelta(hours=8))
+BUILD_TIME = datetime.now(_beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @app.route("/")
@@ -10,6 +15,7 @@ def index():
         "index.html",
         client_id=os.environ.get("AZURE_CLIENT_ID", ""),
         tenant_id=os.environ.get("AZURE_TENANT_ID", "common"),
+        build_time=BUILD_TIME,
     )
 
 

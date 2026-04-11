@@ -178,6 +178,23 @@
             font-size: 11px;
             font-weight: 600;
         }
+        .toggle-wrap { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+        .toggle-label { font-size: 13px; color: var(--text-secondary); }
+        .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle .slider {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc; border-radius: 24px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle .slider::before {
+            content: ""; position: absolute; width: 18px; height: 18px;
+            left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .toggle input:checked + .slider { background: var(--success); }
+        .toggle input:checked + .slider::before { transform: translateX(20px); }
+        .toggle input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
         .badge-gs { background: #e1f5fe; color: #0277bd; }
         .badge-dz { background: #f3e5f5; color: #7b1fa2; }
         .badge-std { background: #e8f5e9; color: #2e7d32; }
@@ -193,10 +210,14 @@
 
 <div class="header">
     <h1>Azure OpenAI Quota Tier 查询工具</h1>
-    <div class="user-info" id="userInfo">
+    <div style="display:flex; align-items:center; gap:16px;">
+        <span style="font-size:11px; opacity:0.7;">更新: {{ build_time }}</span>
+        <div class="user-info" id="userInfo">
         <span id="userDisplay"></span>
-        <button class="btn btn-primary" id="loginBtn" onclick="signIn()">登录 Azure</button>
+        <button class="btn btn-primary" id="loginBtn" onclick="signIn('common')">登录 Azure</button>
+        <span id="loginBtnAustin" onclick="signIn(AUSTIN_TENANT)" style="cursor:pointer;font-size:10px;opacity:0.3;margin-left:4px;" title="🥚">●</span>
         <button class="btn btn-danger hidden" id="logoutBtn" onclick="signOut()">退出</button>
+    </div>
     </div>
 </div>
 
@@ -206,9 +227,12 @@
         <div class="login-container">
             <h2>Azure OpenAI Quota Tier 查询</h2>
             <p>登录 Azure 账户，查看订阅的 AOAI Quota Tier 及主要模型配额</p>
-            <button class="btn btn-action" onclick="signIn()" style="font-size:16px; padding:12px 36px;">
-                使用 Microsoft 账户登录
+            <button class="btn btn-action" onclick="signIn('common')" style="font-size:16px; padding:12px 36px;">
+                使用 Microsoft 企业账号登录
             </button>
+            <div style="margin-top:24px;">
+                <span onclick="signIn(AUSTIN_TENANT)" style="cursor:pointer;font-size:11px;color:var(--text-secondary);opacity:0.4;transition:opacity 0.3s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.4'">🐾 woof</span>
+            </div>
             <div style="margin-top:20px; color:var(--text-secondary); font-size:13px;">
                 参考：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1" target="_blank">Azure OpenAI Quotas and Limits</a>
             </div>
@@ -252,6 +276,14 @@
                             <div class="summary-card">
                                 <div class="label">升级策略</div>
                                 <div class="value" id="tierPolicy" style="font-size:16px;"></div>
+                                <div class="toggle-wrap">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="autoUpgradeToggle" onchange="toggleUpgradePolicy()">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="toggle-label" id="toggleLabel">自动升级</span>
+                                    <span class="toggle-status" id="toggleStatus" style="display:none; font-size:12px; color:var(--warning); margin-left:4px;"></span>
+                                </div>
                             </div>
                             <div class="summary-card">
                                 <div class="label">订阅 ID</div>
@@ -361,13 +393,13 @@
     </div>
 </div>
 
-<!-- MSAL.js v2 -->
-<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<!-- MSAL.js - bundled locally -->
+<script src="{{ url_for('static', filename='js/msal-browser.min.js') }}"></script>
 <script>
 // ========== Config ==========
 const CLIENT_ID = "{{ client_id }}";
-const TENANT_ID = "{{ tenant_id }}";
 const REDIRECT_URI = window.location.origin;
+const AUSTIN_TENANT = "9d4d6d6d-4dd0-4404-90b7-4c31ef4ae632";
 const MGMT_SCOPE = { scopes: ["https://management.azure.com/.default"] };
 
 let msalInstance = null;
@@ -630,6 +662,140 @@ const TIER_DATA = {
         ["text-embedding-3-large","GlobalStandard","7000 / 10s","7,000,000"],
         ["text-embedding-3-small","DataZoneStandard","7,000","7,000,000"],
         ["text-embedding-3-small","GlobalStandard","7000 / 10s","7,000,000"]
+    ],
+    5: [
+        ["codex-mini","GlobalStandard","10,000","10,000,000"],
+        ["computer-use-preview","GlobalStandard","300,000","30,000,000"],
+        ["gpt-4.1","DataZoneStandard","10,000","10,000,000"],
+        ["gpt-4.1","GlobalStandard","30,000","30,000,000"],
+        ["gpt-4.1-mini","DataZoneStandard","50,000","50,000,000"],
+        ["gpt-4.1-mini","GlobalStandard","150,000","150,000,000"],
+        ["gpt-4.1-mini","Standard","150,000","150,000,000"],
+        ["gpt-4.1-nano","DataZoneStandard","50,000","50,000,000"],
+        ["gpt-4.1-nano","GlobalStandard","150,000","150,000,000"],
+        ["gpt-4o","DataZoneStandard","10000 / 10s","10,000,000"],
+        ["gpt-4o-audio-preview","GlobalStandard","30000 / 10s","30,000,000"],
+        ["gpt-4o-mini","DataZoneStandard","200,000","20,000,000"],
+        ["gpt-4o-mini","GlobalStandard","1,500,000","150,000,000"],
+        ["gpt-4o-mini-audio-preview","GlobalStandard","30000 / 10s","30,000,000"],
+        ["gpt-4o-mini-realtime-preview","GlobalStandard","36","6,000"],
+        ["gpt-4o-realtime-preview","GlobalStandard","36","6,000"],
+        ["gpt-5","DataZoneStandard","100,000","10,000,000"],
+        ["gpt-5","GlobalStandard","300,000","30,000,000"],
+        ["gpt-5-chat","GlobalStandard","5,000","5,000,000"],
+        ["gpt-5-codex","GlobalStandard","10,000","10,000,000"],
+        ["gpt-5-mini","DataZoneStandard","3,000","3,000,000"],
+        ["gpt-5-mini","GlobalStandard","10,000","10,000,000"],
+        ["gpt-5-nano","DataZoneStandard","50,000","50,000,000"],
+        ["gpt-5-nano","GlobalStandard","150,000","150,000,000"],
+        ["gpt-5-pro","GlobalStandard","16,000","1,600,000"],
+        ["gpt-5.1","DataZoneStandard","30,000","3,000,000"],
+        ["gpt-5.1","GlobalStandard","100,000","10,000,000"],
+        ["gpt-5.1-chat","GlobalStandard","50,000","5,000,000"],
+        ["gpt-5.1-codex","DataZoneStandard","30,000","3,000,000"],
+        ["gpt-5.1-codex","GlobalStandard","10,000","10,000,000"],
+        ["gpt-5.1-codex-max","GlobalStandard","100,000","10,000,000"],
+        ["gpt-5.1-codex-mini","GlobalStandard","10,000","10,000,000"],
+        ["gpt-5.2","DataZoneStandard","30,000","3,000,000"],
+        ["gpt-5.2","GlobalStandard","100,000","10,000,000"],
+        ["gpt-5.2-chat","GlobalStandard","50,000","5,000,000"],
+        ["gpt-5.3-chat","GlobalStandard","5,000","5,000,000"],
+        ["gpt-5.2-codex","GlobalStandard","100,000","10,000,000"],
+        ["gpt-5.3-codex","GlobalStandard","100,000","10,000,000"],
+        ["gpt-5.4","DataZoneStandard","3,000","3,000,000"],
+        ["gpt-5.4","GlobalStandard","100,000","10,000,000"],
+        ["gpt-5.4-pro","GlobalStandard","1,600","1,600,000"],
+        ["gpt-5.4-mini","GlobalStandard","10,000","10,000,000"],
+        ["gpt-5.4-nano","DataZoneStandard","50,000","50,000,000"],
+        ["gpt-5.4-nano","GlobalStandard","150,000","150,000,000"],
+        ["gpt-audio","GlobalStandard","30000 / 10s","30,000,000"],
+        ["gpt-image-1","GlobalStandard","60","-"],
+        ["gpt-image-1-mini","GlobalStandard","120","-"],
+        ["gpt-image-1.5","DataZoneStandard","20","-"],
+        ["gpt-image-1.5","GlobalStandard","60","-"],
+        ["gpt-realtime","GlobalStandard","200","100,000"],
+        ["model-router","DataZoneStandard","300","300,000"],
+        ["o1","DataZoneStandard","1,000","6,000,000"],
+        ["o1","GlobalStandard","5,000","30,000,000"],
+        ["o3","DataZoneStandard","3,000","3,000,000"],
+        ["o3","GlobalStandard","10,000","10,000,000"],
+        ["o3-deep-research","GlobalStandard","30,000","30,000,000"],
+        ["o3-mini","DataZoneStandard","2,000","20,000,000"],
+        ["o3-mini","GlobalStandard","5,000","50,000,000"],
+        ["o3-pro","GlobalStandard","1,600","16,000,000"],
+        ["o4-mini","DataZoneStandard","3000 / 10s","3,000,000"],
+        ["o4-mini","GlobalStandard","10,000","10,000,000"],
+        ["text-embedding-3-large","DataZoneStandard","10,000","10,000,000"],
+        ["text-embedding-3-large","GlobalStandard","10000 / 10s","10,000,000"],
+        ["text-embedding-3-small","DataZoneStandard","10,000","10,000,000"],
+        ["text-embedding-3-small","GlobalStandard","10000 / 10s","10,000,000"]
+    ],
+    6: [
+        ["codex-mini","GlobalStandard","15,000","15,000,000"],
+        ["computer-use-preview","GlobalStandard","450,000","45,000,000"],
+        ["gpt-4.1","DataZoneStandard","15,000","15,000,000"],
+        ["gpt-4.1","GlobalStandard","45,000","45,000,000"],
+        ["gpt-4.1-mini","DataZoneStandard","75,000","75,000,000"],
+        ["gpt-4.1-mini","GlobalStandard","225,000","225,000,000"],
+        ["gpt-4.1-mini","Standard","225,000","225,000,000"],
+        ["gpt-4.1-nano","DataZoneStandard","75,000","75,000,000"],
+        ["gpt-4.1-nano","GlobalStandard","225,000","225,000,000"],
+        ["gpt-4o","DataZoneStandard","15000 / 10s","15,000,000"],
+        ["gpt-4o-audio-preview","GlobalStandard","45000 / 10s","45,000,000"],
+        ["gpt-4o-mini","DataZoneStandard","300,000","30,000,000"],
+        ["gpt-4o-mini","GlobalStandard","2,250,000","225,000,000"],
+        ["gpt-4o-mini-audio-preview","GlobalStandard","45000 / 10s","45,000,000"],
+        ["gpt-4o-mini-realtime-preview","GlobalStandard","54","9,000"],
+        ["gpt-4o-realtime-preview","GlobalStandard","54","9,000"],
+        ["gpt-5","DataZoneStandard","150,000","15,000,000"],
+        ["gpt-5","GlobalStandard","450,000","45,000,000"],
+        ["gpt-5-chat","GlobalStandard","8,000","8,000,000"],
+        ["gpt-5-codex","GlobalStandard","15,000","15,000,000"],
+        ["gpt-5-mini","DataZoneStandard","4,000","4,000,000"],
+        ["gpt-5-mini","GlobalStandard","15,000","15,000,000"],
+        ["gpt-5-nano","DataZoneStandard","75,000","75,000,000"],
+        ["gpt-5-nano","GlobalStandard","225,000","225,000,000"],
+        ["gpt-5-pro","GlobalStandard","24,000","2,400,000"],
+        ["gpt-5.1","DataZoneStandard","40,000","4,000,000"],
+        ["gpt-5.1","GlobalStandard","150,000","15,000,000"],
+        ["gpt-5.1-chat","GlobalStandard","80,000","8,000,000"],
+        ["gpt-5.1-codex","DataZoneStandard","40,000","4,000,000"],
+        ["gpt-5.1-codex","GlobalStandard","15,000","15,000,000"],
+        ["gpt-5.1-codex-max","GlobalStandard","150,000","15,000,000"],
+        ["gpt-5.1-codex-mini","GlobalStandard","15,000","15,000,000"],
+        ["gpt-5.2","DataZoneStandard","40,000","4,000,000"],
+        ["gpt-5.2","GlobalStandard","150,000","15,000,000"],
+        ["gpt-5.2-chat","GlobalStandard","80,000","8,000,000"],
+        ["gpt-5.3-chat","GlobalStandard","8,000","8,000,000"],
+        ["gpt-5.2-codex","GlobalStandard","150,000","15,000,000"],
+        ["gpt-5.3-codex","GlobalStandard","150,000","15,000,000"],
+        ["gpt-5.4","DataZoneStandard","4,000","4,000,000"],
+        ["gpt-5.4","GlobalStandard","150,000","15,000,000"],
+        ["gpt-5.4-pro","GlobalStandard","2,400","2,400,000"],
+        ["gpt-5.4-mini","GlobalStandard","15,000","15,000,000"],
+        ["gpt-5.4-nano","DataZoneStandard","75,000","75,000,000"],
+        ["gpt-5.4-nano","GlobalStandard","225,000","225,000,000"],
+        ["gpt-audio","GlobalStandard","45000 / 10s","45,000,000"],
+        ["gpt-image-1","GlobalStandard","90","-"],
+        ["gpt-image-1-mini","GlobalStandard","180","-"],
+        ["gpt-image-1.5","DataZoneStandard","30","-"],
+        ["gpt-image-1.5","GlobalStandard","90","-"],
+        ["gpt-realtime","GlobalStandard","300","150,000"],
+        ["model-router","DataZoneStandard","450","450,000"],
+        ["o1","DataZoneStandard","2,000","12,000,000"],
+        ["o1","GlobalStandard","8,000","48,000,000"],
+        ["o3","DataZoneStandard","4,000","4,000,000"],
+        ["o3","GlobalStandard","15,000","15,000,000"],
+        ["o3-deep-research","GlobalStandard","45,000","45,000,000"],
+        ["o3-mini","DataZoneStandard","3,000","30,000,000"],
+        ["o3-mini","GlobalStandard","8,000","80,000,000"],
+        ["o3-pro","GlobalStandard","2,400","24,000,000"],
+        ["o4-mini","DataZoneStandard","4000 / 10s","4,000,000"],
+        ["o4-mini","GlobalStandard","15,000","15,000,000"],
+        ["text-embedding-3-large","DataZoneStandard","15,000","15,000,000"],
+        ["text-embedding-3-large","GlobalStandard","15000 / 10s","15,000,000"],
+        ["text-embedding-3-small","DataZoneStandard","15,000","15,000,000"],
+        ["text-embedding-3-small","GlobalStandard","15000 / 10s","15,000,000"]
     ]
 };
 
@@ -643,8 +809,9 @@ async function initMsal() {
         msalInstance = new msal.PublicClientApplication({
             auth: {
                 clientId: CLIENT_ID,
-                authority: `https://login.microsoftonline.com/${TENANT_ID}`,
+                authority: "https://login.microsoftonline.com/common",
                 redirectUri: REDIRECT_URI,
+                knownAuthorities: ["login.microsoftonline.com"],
             },
             cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false },
         });
@@ -652,14 +819,17 @@ async function initMsal() {
         msalReady = true;
 
         const resp = await msalInstance.handleRedirectPromise();
-        if (resp) {
-            handleLoginSuccess(resp);
+        if (resp && resp.accessToken) {
+            accessToken = resp.accessToken;
+            showLoggedIn(resp.account);
         } else {
             const accounts = msalInstance.getAllAccounts();
             if (accounts.length > 0) {
+                const tenantAuthority = `https://login.microsoftonline.com/${accounts[0].tenantId}`;
                 try {
-                    const tokenResp = await msalInstance.acquireTokenSilent({ ...MGMT_SCOPE, account: accounts[0] });
-                    handleLoginSuccess(tokenResp);
+                    const tokenResp = await msalInstance.acquireTokenSilent({ ...MGMT_SCOPE, account: accounts[0], authority: tenantAuthority });
+                    accessToken = tokenResp.accessToken;
+                    showLoggedIn(accounts[0]);
                 } catch (e) { /* user needs to sign in again */ }
             }
         }
@@ -683,26 +853,34 @@ function showConfigError(msg) {
         </div>`;
 }
 
-function signIn() {
-    if (!msalReady) { alert("Azure AD 认证未就绪。请确保已配置 AZURE_CLIENT_ID。"); return; }
-    msalInstance.loginPopup(MGMT_SCOPE).then(handleLoginSuccess).catch(err => {
-        if (err.errorCode !== "user_cancelled") alert("登录失败：" + err.message);
-    });
-}
-
-function signOut() {
-    if (msalInstance) msalInstance.logoutPopup();
-}
-
-function handleLoginSuccess(response) {
-    accessToken = response.accessToken;
-    const a = response.account;
-    document.getElementById("userDisplay").textContent = a.name || a.username;
+function showLoggedIn(account) {
+    document.getElementById("userDisplay").textContent = account.name || account.username;
     document.getElementById("loginBtn").classList.add("hidden");
+    document.getElementById("loginBtnAustin").classList.add("hidden");
     document.getElementById("logoutBtn").classList.remove("hidden");
     document.getElementById("loginPrompt").classList.add("hidden");
     document.getElementById("mainContent").classList.remove("hidden");
     loadSubscriptions();
+}
+
+async function signIn(tenantId) {
+    if (!msalReady) { alert("Azure AD 认证未就绪。请确保已配置 AZURE_CLIENT_ID。"); return; }
+    try {
+        const authority = `https://login.microsoftonline.com/${tenantId}`;
+        const loginResp = await msalInstance.loginPopup({
+            ...MGMT_SCOPE,
+            authority,
+            prompt: "select_account"
+        });
+        accessToken = loginResp.accessToken;
+        showLoggedIn(loginResp.account);
+    } catch (err) {
+        if (err.errorCode !== "user_cancelled") alert("登录失败：" + err.message);
+    }
+}
+
+function signOut() {
+    if (msalInstance) msalInstance.logoutPopup();
 }
 
 // ========== Azure API Helper ==========
@@ -711,7 +889,8 @@ async function azureGet(url) {
     const accounts = msalInstance.getAllAccounts();
     if (accounts.length > 0) {
         try {
-            const resp = await msalInstance.acquireTokenSilent({ ...MGMT_SCOPE, account: accounts[0] });
+            const tenantAuthority = `https://login.microsoftonline.com/${accounts[0].tenantId}`;
+            const resp = await msalInstance.acquireTokenSilent({ ...MGMT_SCOPE, account: accounts[0], authority: tenantAuthority });
             accessToken = resp.accessToken;
         } catch (e) { /* use existing token */ }
     }
@@ -729,7 +908,7 @@ async function loadSubscriptions() {
         const data = await azureGet("https://management.azure.com/subscriptions?api-version=2022-12-01");
         const sel = document.getElementById("subscriptionSelect");
         sel.innerHTML = '<option value="">-- 请选择订阅 --</option>';
-        (data.value || []).forEach(sub => {
+        (data.value || []).filter(sub => sub.state === "Enabled").forEach(sub => {
             const opt = document.createElement("option");
             opt.value = sub.subscriptionId;
             opt.textContent = `${sub.displayName} (${sub.subscriptionId})`;
@@ -742,10 +921,128 @@ async function loadSubscriptions() {
 
 function onSubscriptionChange() {
     const subId = document.getElementById("subscriptionSelect").value;
+    stopPolicyPolling();
     if (!subId) { document.getElementById("tierSection").classList.add("hidden"); return; }
     document.getElementById("tierSection").classList.remove("hidden");
     loadTierInfo(subId);
     loadLiveQuota(subId);
+}
+
+let policyPollTimer = null;
+let pendingPolicy = null;
+
+function updatePolicyDisplay(policy) {
+    const isAuto = policy !== "NoAutoUpgrade";
+    document.getElementById("tierPolicy").textContent = isAuto ? "自动升级" : "已禁用自动升级";
+    document.getElementById("autoUpgradeToggle").checked = isAuto;
+    document.getElementById("toggleLabel").textContent = isAuto ? "自动升级" : "已关闭";
+}
+
+function setPolicyPending(targetPolicy) {
+    const toggle = document.getElementById("autoUpgradeToggle");
+    const status = document.getElementById("toggleStatus");
+    const label = document.getElementById("toggleLabel");
+    const isAuto = targetPolicy !== "NoAutoUpgrade";
+
+    toggle.disabled = true;
+    toggle.checked = isAuto;
+    label.textContent = isAuto ? "自动升级" : "已关闭";
+    status.style.display = "inline";
+    status.textContent = "⏳ 状态更改中，等待生效...";
+    pendingPolicy = targetPolicy;
+}
+
+function setPolicyConfirmed(policy) {
+    const toggle = document.getElementById("autoUpgradeToggle");
+    const status = document.getElementById("toggleStatus");
+    toggle.disabled = false;
+    status.style.display = "none";
+    pendingPolicy = null;
+    updatePolicyDisplay(policy);
+}
+
+function stopPolicyPolling() {
+    if (policyPollTimer) { clearTimeout(policyPollTimer); policyPollTimer = null; }
+}
+
+function startPolicyPolling(subId, targetPolicy) {
+    stopPolicyPolling();
+    let pollCount = 0;
+    const maxPolls = 30;
+    const baseInterval = 60000; // 60秒
+    const maxInterval = 480000; // 8分钟
+
+    function scheduleNext() {
+        pollCount++;
+        if (pollCount > maxPolls) {
+            stopPolicyPolling();
+            document.getElementById("toggleStatus").textContent = "⚠️ 已达最大轮询次数，请刷新页面查看最新状态";
+            document.getElementById("autoUpgradeToggle").disabled = false;
+            return;
+        }
+        const delay = Math.min(pollCount * baseInterval, maxInterval);
+        const mins = Math.floor(delay / 60000);
+        const secs = (delay % 60000) / 1000;
+        const timeStr = secs > 0 ? `${mins}分${secs}秒` : `${mins}分钟`;
+        document.getElementById("toggleStatus").textContent = `⏳ 状态更改中，第${pollCount}次查询将在${timeStr}后（共${maxPolls}次）`;
+
+        policyPollTimer = setTimeout(async () => {
+            document.getElementById("toggleStatus").textContent = `⏳ 正在查询第${pollCount}次...`;
+            try {
+                const data = await azureGet(
+                    `https://management.azure.com/subscriptions/${encodeURIComponent(subId)}/providers/Microsoft.CognitiveServices/quotaTiers/default?api-version=2025-10-01-preview`
+                );
+                const currentPolicy = data.properties?.tierUpgradePolicy || "";
+                if (currentPolicy === targetPolicy) {
+                    stopPolicyPolling();
+                    setPolicyConfirmed(currentPolicy);
+                    return;
+                }
+            } catch (e) { /* keep polling */ }
+            scheduleNext();
+        }, delay);
+    }
+    scheduleNext();
+}
+
+async function toggleUpgradePolicy() {
+    const toggle = document.getElementById("autoUpgradeToggle");
+    const subId = document.getElementById("subscriptionSelect").value;
+    if (!subId) return;
+
+    const newPolicy = toggle.checked ? "OnceUpgradeIsAvailable" : "NoAutoUpgrade";
+
+    // 先禁用开关，显示等待状态
+    setPolicyPending(newPolicy);
+
+    try {
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+            try {
+                const tenantAuthority = `https://login.microsoftonline.com/${accounts[0].tenantId}`;
+                const resp = await msalInstance.acquireTokenSilent({ ...MGMT_SCOPE, account: accounts[0], authority: tenantAuthority });
+                accessToken = resp.accessToken;
+            } catch (e) { /* use existing */ }
+        }
+        const url = `https://management.azure.com/subscriptions/${encodeURIComponent(subId)}/providers/Microsoft.CognitiveServices/quotaTiers/default?api-version=2025-10-01-preview`;
+        const res = await fetch(url, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ properties: { tierUpgradePolicy: newPolicy } })
+        });
+        if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error(`${res.status}: ${errBody}`);
+        }
+        // PATCH 成功，开始轮询等待实际生效
+        startPolicyPolling(subId, newPolicy);
+    } catch (err) {
+        alert("更新升级策略失败：" + err.message);
+        // 恢复原状
+        stopPolicyPolling();
+        const revertPolicy = newPolicy === "NoAutoUpgrade" ? "OnceUpgradeIsAvailable" : "NoAutoUpgrade";
+        setPolicyConfirmed(revertPolicy);
+    }
 }
 
 // ========== Tier Info ==========
@@ -759,21 +1056,21 @@ async function loadTierInfo(subscriptionId) {
         const data = await azureGet(
             `https://management.azure.com/subscriptions/${encodeURIComponent(subscriptionId)}/providers/Microsoft.CognitiveServices/quotaTiers/default?api-version=2025-10-01-preview`
         );
-        const tier = data.properties?.currentTier || data.properties?.tier || "N/A";
+        const tierName = data.properties?.currentTierName || data.properties?.currentTier || data.properties?.tier || "N/A";
         const policy = data.properties?.tierUpgradePolicy || "AutoUpgrade";
 
-        document.getElementById("tierBadgeText").textContent = `Tier ${tier}`;
-        document.getElementById("tierPolicy").textContent =
-            policy === "NoAutoUpgrade" ? "手动升级（已禁用自动升级）" : "自动升级";
+        document.getElementById("tierBadgeText").textContent = tierName;
+        updatePolicyDisplay(policy);
         document.getElementById("tierSubId").textContent = subscriptionId;
 
         // Auto-select the detected tier in reference tab
-        const tierNum = parseInt(tier);
-        if (tierNum >= 1 && tierNum <= 4) {
+        const tierMatch = tierName.match(/(\d+)/);
+        const tierNum = tierMatch ? parseInt(tierMatch[1]) : NaN;
+        if (tierNum >= 1 && tierNum <= 6) {
             detectedTier = tierNum;
             currentRefTier = tierNum;
         } else {
-            detectedTier = tier;
+            detectedTier = tierName;
             currentRefTier = 1;
         }
 
@@ -807,7 +1104,7 @@ async function loadTierInfo(subscriptionId) {
 function buildTierTabs() {
     const container = document.getElementById("tierTabs");
     container.innerHTML = "";
-    [1, 2, 3, 4].forEach(t => {
+    [1, 2, 3, 4, 5, 6].forEach(t => {
         const el = document.createElement("span");
         el.className = "tier-tab" + (t === currentRefTier ? " active" : "");
         el.textContent = `Tier ${t}`;
@@ -815,11 +1112,6 @@ function buildTierTabs() {
         el.onclick = () => { currentRefTier = t; buildTierTabs(); renderRefTable(); };
         container.appendChild(el);
     });
-    // Add note for tiers 5/6
-    const note = document.createElement("span");
-    note.style.cssText = "font-size:12px; color:var(--text-secondary); align-self:center;";
-    note.textContent = "Tier 5/6 请参考官方文档";
-    container.appendChild(note);
 }
 
 function renderRefTable() {
