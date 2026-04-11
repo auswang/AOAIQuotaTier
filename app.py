@@ -15,6 +15,7 @@ def index():
         "index.html",
         client_id=os.environ.get("AZURE_CLIENT_ID", ""),
         tenant_id=os.environ.get("AZURE_TENANT_ID", "common"),
+        austin_tenant=os.environ.get("AUSTIN_TENANT", ""),
         build_time=BUILD_TIME,
     )
 
@@ -25,4 +26,4 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=False)
