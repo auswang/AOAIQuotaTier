@@ -1059,7 +1059,7 @@ async function initMsal() {
                 redirectUri: REDIRECT_URI,
                 knownAuthorities: ["login.microsoftonline.com"],
             },
-            cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false },
+            cache: { cacheLocation: "localStorage", storeAuthStateInCookie: false },
         });
         await msalInstance.initialize();
         msalReady = true;
