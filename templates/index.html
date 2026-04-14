@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Azure OpenAI Quota Tier 查询</title>
+    <title data-i18n="pageTitle">Azure OpenAI Quota Tier 查询</title>
     <style>
         :root {
             --primary: #0078d4;
@@ -204,19 +204,34 @@
             .filter-row { flex-direction: column; }
             .summary-row { grid-template-columns: 1fr; }
         }
+        .lang-bar { display:flex; gap:4px; align-items:center; }
+        .lang-btn {
+            padding:3px 10px; border:1px solid rgba(255,255,255,0.5); border-radius:3px;
+            background:transparent; color:#fff; font-size:12px; font-weight:600;
+            cursor:pointer; transition:all 0.15s;
+        }
+        .lang-btn:hover { background:rgba(255,255,255,0.15); }
+        .lang-btn.active { background:#fff; color:var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>Azure OpenAI Quota Tier 查询工具 <span style="font-size:11px; font-weight:normal; opacity:0.6; margin-left:8px;">vibe coding by GitHub Copilot</span></h1>
+    <h1 data-i18n="headerTitle">Azure OpenAI Quota Tier 查询工具 <span style="font-size:11px; font-weight:normal; opacity:0.6; margin-left:8px;">vibe coding by GitHub Copilot</span></h1>
+    <div class="lang-bar">
+        <button class="lang-btn active" onclick="setLang('zh-CN')">简</button>
+        <button class="lang-btn" onclick="setLang('zh-TW')">繁</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" onclick="setLang('ja')">JA</button>
+        <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    </div>
     <div style="display:flex; align-items:center; gap:16px;">
-        <span style="font-size:11px; opacity:0.7;">更新: {{ build_time }}</span>
+        <span style="font-size:11px; opacity:0.7;" data-i18n="deployTime">更新: {{ build_time }}</span>
         <div class="user-info" id="userInfo">
         <span id="userDisplay"></span>
-        <button class="btn btn-primary" id="loginBtn" onclick="signIn('common')">登录 Azure</button>
+        <button class="btn btn-primary" id="loginBtn" onclick="signIn('common')" data-i18n="loginBtn">登录 Azure</button>
         <span id="loginBtnAustin" onclick="signIn(AUSTIN_TENANT)" style="cursor:pointer;font-size:10px;opacity:0.3;margin-left:4px;" title="🥚">●</span>
-        <button class="btn btn-danger hidden" id="logoutBtn" onclick="signOut()">退出</button>
+        <button class="btn btn-danger hidden" id="logoutBtn" onclick="signOut()" data-i18n="logoutBtn">退出</button>
     </div>
     </div>
 </div>
@@ -225,16 +240,16 @@
     <!-- Login Prompt -->
     <div id="loginPrompt" class="card">
         <div class="login-container">
-            <h2>Azure OpenAI Quota Tier 查询</h2>
-            <p>登录 Azure 账户，查看订阅的 AOAI Quota Tier 及主要模型配额</p>
-            <button class="btn btn-action" onclick="signIn('common')" style="font-size:16px; padding:12px 36px;">
+            <h2 data-i18n="loginTitle">Azure OpenAI Quota Tier 查询</h2>
+            <p data-i18n="loginDesc">登录 Azure 账户，查看订阅的 AOAI Quota Tier 及主要模型配额</p>
+            <button class="btn btn-action" onclick="signIn('common')" style="font-size:16px; padding:12px 36px;" data-i18n="loginAction">
                 使用 Microsoft 企业账号登录
             </button>
             <div style="margin-top:24px;">
                 <span onclick="signIn(AUSTIN_TENANT)" style="cursor:pointer;font-size:11px;color:var(--text-secondary);opacity:0.4;transition:opacity 0.3s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.4'">🐾 woof</span>
             </div>
             <div style="margin-top:20px; color:var(--text-secondary); font-size:13px;">
-                参考：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1" target="_blank">Azure OpenAI Quotas and Limits</a>
+                <span data-i18n="refLabel">参考：</span><a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1" target="_blank">Azure OpenAI Quotas and Limits</a>
             </div>
         </div>
     </div>
@@ -243,12 +258,12 @@
     <div id="mainContent" class="hidden">
         <!-- Subscription Selector -->
         <div class="card">
-            <div class="card-header"><h2>选择订阅</h2></div>
+            <div class="card-header"><h2 data-i18n="selectSub">选择订阅</h2></div>
             <div class="card-body">
                 <div class="form-group">
-                    <label for="subscriptionSelect">Azure 订阅</label>
+                    <label for="subscriptionSelect" data-i18n="azureSub">Azure 订阅</label>
                     <select id="subscriptionSelect" onchange="onSubscriptionChange()">
-                        <option value="">-- 请选择订阅 --</option>
+                        <option value="" data-i18n="selectSubPlaceholder">-- 请选择订阅 --</option>
                     </select>
                 </div>
             </div>
@@ -259,34 +274,34 @@
             <!-- Tier Info Card -->
             <div class="card">
                 <div class="card-header">
-                    <h2>Quota Tier 信息</h2>
-                    <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1#quota-tiers" target="_blank">了解更多 →</a>
+                    <h2 data-i18n="tierInfo">Quota Tier 信息</h2>
+                    <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1#quota-tiers" target="_blank" data-i18n="learnMore">了解更多 →</a>
                 </div>
                 <div class="card-body">
                     <div id="tierLoading" class="loading">
                         <div class="spinner"></div>
-                        <div>正在查询 Tier 信息...</div>
+                        <div data-i18n="loadingTier">正在查询 Tier 信息...</div>
                     </div>
                     <div id="tierResult" class="hidden">
                         <div class="summary-row">
                             <div class="summary-card">
-                                <div class="label">当前 Quota Tier</div>
+                                <div class="label" data-i18n="currentTier">当前 Quota Tier</div>
                                 <div class="value" id="tierBadgeText"></div>
                             </div>
                             <div class="summary-card">
-                                <div class="label">升级策略</div>
+                                <div class="label" data-i18n="upgradePolicy">升级策略</div>
                                 <div class="value" id="tierPolicy" style="font-size:16px;"></div>
                                 <div class="toggle-wrap">
                                     <label class="toggle">
                                         <input type="checkbox" id="autoUpgradeToggle" onchange="toggleUpgradePolicy()">
                                         <span class="slider"></span>
                                     </label>
-                                    <span class="toggle-label" id="toggleLabel">自动升级</span>
+                                    <span class="toggle-label" id="toggleLabel" data-i18n="autoUpgrade">自动升级</span>
                                     <span class="toggle-status" id="toggleStatus" style="display:none; font-size:12px; color:var(--warning); margin-left:4px;"></span>
                                 </div>
                             </div>
                             <div class="summary-card">
-                                <div class="label">订阅 ID</div>
+                                <div class="label" data-i18n="subIdLabel">订阅 ID</div>
                                 <div class="value" id="tierSubId" style="font-size:13px; word-break:break-all;"></div>
                             </div>
                         </div>
@@ -298,12 +313,12 @@
             <!-- Quota Table Card -->
             <div class="card">
                 <div class="card-header">
-                    <h2>模型配额详情</h2>
+                    <h2 data-i18n="modelQuota">模型配额详情</h2>
                 </div>
                 <div style="padding: 0 24px;">
                     <div class="tabs">
-                        <div class="tab active" onclick="switchTab('ref')">Tier 配额参考</div>
-                        <div class="tab" onclick="switchTab('live')">实时配额使用</div>
+                        <div class="tab active" onclick="switchTab('ref')" data-i18n="tabRef">Tier 配额参考</div>
+                        <div class="tab" onclick="switchTab('live')" data-i18n="tabLive">实时配额使用</div>
                     </div>
                 </div>
 
@@ -312,20 +327,20 @@
                     <div class="card-body">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
                             <div class="tier-select-row" id="tierTabs"></div>
-                            <div style="font-size:12px; color:var(--text-secondary);">
+                            <div style="font-size:12px; color:var(--text-secondary);" data-i18n="dataSource">
                                 数据来源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a>
                                 · 表格列：RPM (请求/分钟) / TPM (Token/分钟)
                             </div>
                         </div>
                         <div class="filter-row">
                             <div class="form-group">
-                                <label for="refModelFilter">筛选模型</label>
-                                <input type="text" id="refModelFilter" placeholder="输入模型名称..." oninput="renderRefTable()">
+                                <label for="refModelFilter" data-i18n="filterModel">筛选模型</label>
+                                <input type="text" id="refModelFilter" data-i18n-placeholder="filterModelPlaceholder" placeholder="输入模型名称..." oninput="renderRefTable()">
                             </div>
                             <div class="form-group">
-                                <label for="refDeployFilter">部署类型</label>
+                                <label for="refDeployFilter" data-i18n="deployType">部署类型</label>
                                 <select id="refDeployFilter" onchange="renderRefTable()">
-                                    <option value="">全部</option>
+                                    <option value="" data-i18n="all">全部</option>
                                     <option value="GlobalStandard">Global Standard</option>
                                     <option value="DataZoneStandard">Data Zone Standard</option>
                                     <option value="Standard">Standard</option>
@@ -336,8 +351,8 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>模型</th>
-                                        <th>部署类型</th>
+                                        <th data-i18n="thModel">模型</th>
+                                        <th data-i18n="thDeployType">部署类型</th>
                                         <th>RPM</th>
                                         <th>TPM</th>
                                     </tr>
@@ -353,36 +368,36 @@
                     <div class="card-body">
                         <div class="filter-row">
                             <div class="form-group">
-                                <label for="liveModelFilter">筛选模型</label>
-                                <input type="text" id="liveModelFilter" placeholder="输入模型名称..." oninput="filterLiveTable()">
+                                <label for="liveModelFilter" data-i18n="filterModel">筛选模型</label>
+                                <input type="text" id="liveModelFilter" data-i18n-placeholder="filterModelPlaceholder" placeholder="输入模型名称..." oninput="filterLiveTable()">
                             </div>
                             <div class="form-group">
-                                <label for="liveRegionFilter">区域</label>
+                                <label for="liveRegionFilter" data-i18n="region">区域</label>
                                 <select id="liveRegionFilter" onchange="filterLiveTable()">
-                                    <option value="">全部</option>
+                                    <option value="" data-i18n="all">全部</option>
                                 </select>
                             </div>
                         </div>
                         <div id="liveLoading" class="loading">
                             <div class="spinner"></div>
-                            <div>正在查询各区域配额数据...</div>
+                            <div data-i18n="loadingLive">正在查询各区域配额数据...</div>
                         </div>
                         <div id="liveTableWrapper" class="table-wrapper hidden">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>模型</th>
-                                        <th>部署类型</th>
-                                        <th>区域</th>
-                                        <th>已分配</th>
-                                        <th>配额上限</th>
-                                        <th>使用率</th>
+                                        <th data-i18n="thModel">模型</th>
+                                        <th data-i18n="thDeployType">部署类型</th>
+                                        <th data-i18n="thRegion">区域</th>
+                                        <th data-i18n="thAllocated">已分配</th>
+                                        <th data-i18n="thLimit">配额上限</th>
+                                        <th data-i18n="thUsage">使用率</th>
                                     </tr>
                                 </thead>
                                 <tbody id="liveTableBody"></tbody>
                             </table>
                         </div>
-                        <div id="liveEmpty" class="hidden" style="text-align:center; padding:24px; color:var(--text-secondary); font-size:14px;">
+                        <div id="liveEmpty" class="hidden" style="text-align:center; padding:24px; color:var(--text-secondary); font-size:14px;" data-i18n="noQuotaData">
                             该订阅下暂无 AOAI 配额数据。
                         </div>
                         <div id="liveError" class="hidden"></div>
@@ -401,6 +416,229 @@ const CLIENT_ID = "{{ client_id }}";
 const REDIRECT_URI = window.location.origin;
 const AUSTIN_TENANT = "{{ austin_tenant }}";
 const MGMT_SCOPE = { scopes: ["https://management.azure.com/.default"] };
+const BUILD_TIME = "{{ build_time }}";
+
+// ========== i18n ==========
+let currentLang = localStorage.getItem('lang') || 'zh-CN';
+const I18N = {
+    "zh-CN": {
+        pageTitle: "Azure OpenAI Quota Tier 查询",
+        headerTitle: 'Azure OpenAI Quota Tier 查询工具 <span style="font-size:11px;font-weight:normal;opacity:0.6;margin-left:8px;">vibe coding by GitHub Copilot</span>',
+        deployTime: `更新: ${BUILD_TIME}`,
+        loginBtn: "登录 Azure", logoutBtn: "退出",
+        loginTitle: "Azure OpenAI Quota Tier 查询",
+        loginDesc: "登录 Azure 账户，查看订阅的 AOAI Quota Tier 及主要模型配额",
+        loginAction: "使用 Microsoft 企业账号登录",
+        selectSub: "选择订阅", azureSub: "Azure 订阅", selectSubPlaceholder: "-- 请选择订阅 --",
+        tierInfo: "Quota Tier 信息", learnMore: "了解更多 →", loadingTier: "正在查询 Tier 信息...",
+        currentTier: "当前 Quota Tier", upgradePolicy: "升级策略", subIdLabel: "订阅 ID",
+        autoUpgrade: "自动升级", autoUpgradeOff: "已关闭",
+        autoUpgradeEnabled: "自动升级", autoUpgradeDisabled: "已禁用自动升级",
+        modelQuota: "模型配额详情", tabRef: "Tier 配额参考", tabLive: "实时配额使用",
+        dataSource: '数据来源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · 表格列：RPM (请求/分钟) / TPM (Token/分钟)',
+        filterModel: "筛选模型", filterModelPlaceholder: "输入模型名称...",
+        deployType: "部署类型", all: "全部", region: "区域",
+        thModel: "模型", thDeployType: "部署类型", thRegion: "区域",
+        thAllocated: "已分配", thLimit: "配额上限", thUsage: "使用率",
+        loadingLive: "正在查询各区域配额数据...",
+        noQuotaData: "该订阅下暂无 AOAI 配额数据。",
+        noResource: "该订阅下未找到 Azure OpenAI / AI Services 资源。",
+        noDeploy: "该订阅下未找到 AOAI 部署。请确认已创建 Azure OpenAI 资源和模型部署。",
+        tierQueryFail: "查询 Tier 失败：", liveQueryFail: "查询实时配额失败：",
+        loadSubFail: "加载订阅列表失败：", loginFail: "登录失败：",
+        updatePolicyFail: "更新升级策略失败：", notAssigned: "未分配",
+        configError: "配置错误", configDesc: "未配置 AZURE_CLIENT_ID 环境变量。",
+        configSteps: "解决步骤：", configStep1: "运行项目中的 setup.sh 脚本来自动配置",
+        configStep2: "或者在 Azure Portal → Entra ID → App registrations 中注册应用 (SPA 类型)",
+        configStep3: "在 Web App → 配置 → 应用程序设置 中添加 AZURE_CLIENT_ID",
+        msalFail: "MSAL 初始化失败：", authNotReady: "Azure AD 认证未就绪。请确保已配置 AZURE_CLIENT_ID。",
+        pollStatus: "⏳ 状态更改中，第{n}次查询将在{t}后（共{max}次）",
+        pollChecking: "⏳ 正在查询第{n}次...",
+        pollMaxReached: "⚠️ 已达最大轮询次数，请刷新页面查看最新状态",
+        pendingStatus: "⏳ 状态更改中，等待生效...",
+        refLabel: "参考：",
+    },
+    "zh-TW": {
+        pageTitle: "Azure OpenAI Quota Tier 查詢",
+        headerTitle: 'Azure OpenAI Quota Tier 查詢工具 <span style="font-size:11px;font-weight:normal;opacity:0.6;margin-left:8px;">vibe coding by GitHub Copilot</span>',
+        deployTime: `更新: ${BUILD_TIME}`,
+        loginBtn: "登入 Azure", logoutBtn: "登出",
+        loginTitle: "Azure OpenAI Quota Tier 查詢",
+        loginDesc: "登入 Azure 帳戶，查看訂閱的 AOAI Quota Tier 及主要模型配額",
+        loginAction: "使用 Microsoft 企業帳號登入",
+        selectSub: "選擇訂閱", azureSub: "Azure 訂閱", selectSubPlaceholder: "-- 請選擇訂閱 --",
+        tierInfo: "Quota Tier 資訊", learnMore: "瞭解更多 →", loadingTier: "正在查詢 Tier 資訊...",
+        currentTier: "目前 Quota Tier", upgradePolicy: "升級策略", subIdLabel: "訂閱 ID",
+        autoUpgrade: "自動升級", autoUpgradeOff: "已關閉",
+        autoUpgradeEnabled: "自動升級", autoUpgradeDisabled: "已停用自動升級",
+        modelQuota: "模型配額詳情", tabRef: "Tier 配額參考", tabLive: "即時配額使用",
+        dataSource: '資料來源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · 表格欄：RPM (請求/分鐘) / TPM (Token/分鐘)',
+        filterModel: "篩選模型", filterModelPlaceholder: "輸入模型名稱...",
+        deployType: "部署類型", all: "全部", region: "區域",
+        thModel: "模型", thDeployType: "部署類型", thRegion: "區域",
+        thAllocated: "已分配", thLimit: "配額上限", thUsage: "使用率",
+        loadingLive: "正在查詢各區域配額資料...",
+        noQuotaData: "該訂閱下暫無 AOAI 配額資料。",
+        noResource: "該訂閱下未找到 Azure OpenAI / AI Services 資源。",
+        noDeploy: "該訂閱下未找到 AOAI 部署。請確認已建立 Azure OpenAI 資源和模型部署。",
+        tierQueryFail: "查詢 Tier 失敗：", liveQueryFail: "查詢即時配額失敗：",
+        loadSubFail: "載入訂閱列表失敗：", loginFail: "登入失敗：",
+        updatePolicyFail: "更新升級策略失敗：", notAssigned: "未分配",
+        configError: "設定錯誤", configDesc: "未設定 AZURE_CLIENT_ID 環境變數。",
+        configSteps: "解決步驟：", configStep1: "執行專案中的 setup.sh 腳本來自動設定",
+        configStep2: "或在 Azure Portal → Entra ID → App registrations 中註冊應用 (SPA 類型)",
+        configStep3: "在 Web App → 設定 → 應用程式設定 中新增 AZURE_CLIENT_ID",
+        msalFail: "MSAL 初始化失敗：", authNotReady: "Azure AD 驗證未就緒。請確保已設定 AZURE_CLIENT_ID。",
+        pollStatus: "⏳ 狀態變更中，第{n}次查詢將在{t}後（共{max}次）",
+        pollChecking: "⏳ 正在查詢第{n}次...",
+        pollMaxReached: "⚠️ 已達最大輪詢次數，請重新整理頁面查看最新狀態",
+        pendingStatus: "⏳ 狀態變更中，等待生效...",
+        refLabel: "參考：",
+    },
+    "en": {
+        pageTitle: "Azure OpenAI Quota Tier Query",
+        headerTitle: 'Azure OpenAI Quota Tier Query Tool <span style="font-size:11px;font-weight:normal;opacity:0.6;margin-left:8px;">vibe coding by GitHub Copilot</span>',
+        deployTime: `Deployed: ${BUILD_TIME}`,
+        loginBtn: "Sign in Azure", logoutBtn: "Sign out",
+        loginTitle: "Azure OpenAI Quota Tier Query",
+        loginDesc: "Sign in to your Azure account to view AOAI Quota Tier and model quotas",
+        loginAction: "Sign in with Microsoft Work Account",
+        selectSub: "Select Subscription", azureSub: "Azure Subscription", selectSubPlaceholder: "-- Select subscription --",
+        tierInfo: "Quota Tier Info", learnMore: "Learn more →", loadingTier: "Querying Tier info...",
+        currentTier: "Current Quota Tier", upgradePolicy: "Upgrade Policy", subIdLabel: "Subscription ID",
+        autoUpgrade: "Auto Upgrade", autoUpgradeOff: "Disabled",
+        autoUpgradeEnabled: "Auto Upgrade", autoUpgradeDisabled: "Auto Upgrade Disabled",
+        modelQuota: "Model Quota Details", tabRef: "Tier Quota Reference", tabLive: "Live Quota Usage",
+        dataSource: 'Source: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · Columns: RPM (Requests/min) / TPM (Tokens/min)',
+        filterModel: "Filter Model", filterModelPlaceholder: "Enter model name...",
+        deployType: "Deployment Type", all: "All", region: "Region",
+        thModel: "Model", thDeployType: "Deployment Type", thRegion: "Region",
+        thAllocated: "Allocated", thLimit: "Quota Limit", thUsage: "Usage",
+        loadingLive: "Querying quota data across regions...",
+        noQuotaData: "No AOAI quota data found for this subscription.",
+        noResource: "No Azure OpenAI / AI Services resources found in this subscription.",
+        noDeploy: "No AOAI deployments found. Please verify that Azure OpenAI resources and model deployments exist.",
+        tierQueryFail: "Tier query failed: ", liveQueryFail: "Live quota query failed: ",
+        loadSubFail: "Failed to load subscriptions: ", loginFail: "Sign-in failed: ",
+        updatePolicyFail: "Failed to update upgrade policy: ", notAssigned: "Not assigned",
+        configError: "Configuration Error", configDesc: "AZURE_CLIENT_ID not configured.",
+        configSteps: "Steps to fix:", configStep1: "Run setup.sh script to auto-configure",
+        configStep2: "Or register an app in Azure Portal → Entra ID → App registrations (SPA type)",
+        configStep3: "Add AZURE_CLIENT_ID in Web App → Settings → App Settings",
+        msalFail: "MSAL init failed: ", authNotReady: "Azure AD auth not ready. Ensure AZURE_CLIENT_ID is configured.",
+        pollStatus: "⏳ Updating, poll #{n} in {t} ({max} total)",
+        pollChecking: "⏳ Checking poll #{n}...",
+        pollMaxReached: "⚠️ Max polls reached. Refresh page for latest status.",
+        pendingStatus: "⏳ Updating, waiting for effect...",
+        refLabel: "Reference: ",
+    },
+    "ja": {
+        pageTitle: "Azure OpenAI Quota Tier クエリ",
+        headerTitle: 'Azure OpenAI Quota Tier クエリツール <span style="font-size:11px;font-weight:normal;opacity:0.6;margin-left:8px;">vibe coding by GitHub Copilot</span>',
+        deployTime: `更新: ${BUILD_TIME}`,
+        loginBtn: "Azure にサインイン", logoutBtn: "サインアウト",
+        loginTitle: "Azure OpenAI Quota Tier クエリ",
+        loginDesc: "Azure アカウントにサインインして、AOAI Quota Tier とモデルクォータを確認",
+        loginAction: "Microsoft 職場アカウントでサインイン",
+        selectSub: "サブスクリプション選択", azureSub: "Azure サブスクリプション", selectSubPlaceholder: "-- サブスクリプションを選択 --",
+        tierInfo: "Quota Tier 情報", learnMore: "詳細 →", loadingTier: "Tier 情報を照会中...",
+        currentTier: "現在の Quota Tier", upgradePolicy: "アップグレードポリシー", subIdLabel: "サブスクリプション ID",
+        autoUpgrade: "自動アップグレード", autoUpgradeOff: "無効",
+        autoUpgradeEnabled: "自動アップグレード", autoUpgradeDisabled: "自動アップグレード無効",
+        modelQuota: "モデルクォータ詳細", tabRef: "Tier クォータ参照", tabLive: "リアルタイムクォータ使用量",
+        dataSource: 'データソース: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · 列: RPM (リクエスト/分) / TPM (トークン/分)',
+        filterModel: "モデルフィルター", filterModelPlaceholder: "モデル名を入力...",
+        deployType: "デプロイタイプ", all: "すべて", region: "リージョン",
+        thModel: "モデル", thDeployType: "デプロイタイプ", thRegion: "リージョン",
+        thAllocated: "割り当て済", thLimit: "クォータ上限", thUsage: "使用率",
+        loadingLive: "各リージョンのクォータデータを照会中...",
+        noQuotaData: "このサブスクリプションに AOAI クォータデータはありません。",
+        noResource: "このサブスクリプションに Azure OpenAI / AI Services リソースが見つかりません。",
+        noDeploy: "AOAI デプロイが見つかりません。Azure OpenAI リソースとモデルデプロイが作成されていることを確認してください。",
+        tierQueryFail: "Tier クエリ失敗: ", liveQueryFail: "リアルタイムクォータクエリ失敗: ",
+        loadSubFail: "サブスクリプション一覧の読み込み失敗: ", loginFail: "サインイン失敗: ",
+        updatePolicyFail: "アップグレードポリシーの更新失敗: ", notAssigned: "未割り当て",
+        configError: "設定エラー", configDesc: "AZURE_CLIENT_ID が設定されていません。",
+        configSteps: "解決手順:", configStep1: "setup.sh スクリプトを実行して自動設定",
+        configStep2: "または Azure Portal → Entra ID → アプリ登録でアプリを登録 (SPA タイプ)",
+        configStep3: "Web App → 設定 → アプリケーション設定に AZURE_CLIENT_ID を追加",
+        msalFail: "MSAL 初期化失敗: ", authNotReady: "Azure AD 認証が準備できていません。AZURE_CLIENT_ID を確認してください。",
+        pollStatus: "⏳ 更新中、第{n}回クエリは{t}後（最大{max}回）",
+        pollChecking: "⏳ 第{n}回を確認中...",
+        pollMaxReached: "⚠️ 最大ポーリング回数に達しました。ページを更新してください。",
+        pendingStatus: "⏳ 更新中、反映を待っています...",
+        refLabel: "参照: ",
+    },
+    "fr": {
+        pageTitle: "Requête Azure OpenAI Quota Tier",
+        headerTitle: 'Outil de requête Azure OpenAI Quota Tier <span style="font-size:11px;font-weight:normal;opacity:0.6;margin-left:8px;">vibe coding by GitHub Copilot</span>',
+        deployTime: `Déployé: ${BUILD_TIME}`,
+        loginBtn: "Connexion Azure", logoutBtn: "Déconnexion",
+        loginTitle: "Requête Azure OpenAI Quota Tier",
+        loginDesc: "Connectez-vous à votre compte Azure pour voir le Quota Tier AOAI et les quotas de modèles",
+        loginAction: "Se connecter avec un compte Microsoft professionnel",
+        selectSub: "Sélectionner l'abonnement", azureSub: "Abonnement Azure", selectSubPlaceholder: "-- Sélectionner un abonnement --",
+        tierInfo: "Info Quota Tier", learnMore: "En savoir plus →", loadingTier: "Interrogation des infos Tier...",
+        currentTier: "Quota Tier actuel", upgradePolicy: "Politique de mise à niveau", subIdLabel: "ID d'abonnement",
+        autoUpgrade: "Mise à niveau auto", autoUpgradeOff: "Désactivé",
+        autoUpgradeEnabled: "Mise à niveau auto", autoUpgradeDisabled: "Mise à niveau auto désactivée",
+        modelQuota: "Détails des quotas", tabRef: "Quotas Tier de référence", tabLive: "Utilisation en temps réel",
+        dataSource: 'Source: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · Colonnes: RPM (requêtes/min) / TPM (tokens/min)',
+        filterModel: "Filtrer le modèle", filterModelPlaceholder: "Entrer le nom du modèle...",
+        deployType: "Type de déploiement", all: "Tous", region: "Région",
+        thModel: "Modèle", thDeployType: "Type de déploiement", thRegion: "Région",
+        thAllocated: "Alloué", thLimit: "Limite de quota", thUsage: "Utilisation",
+        loadingLive: "Interrogation des quotas par région...",
+        noQuotaData: "Aucune donnée de quota AOAI pour cet abonnement.",
+        noResource: "Aucune ressource Azure OpenAI / AI Services trouvée dans cet abonnement.",
+        noDeploy: "Aucun déploiement AOAI trouvé. Vérifiez que les ressources Azure OpenAI et les déploiements de modèles existent.",
+        tierQueryFail: "Échec de la requête Tier : ", liveQueryFail: "Échec de la requête quotas : ",
+        loadSubFail: "Échec du chargement des abonnements : ", loginFail: "Échec de connexion : ",
+        updatePolicyFail: "Échec de la mise à jour : ", notAssigned: "Non attribué",
+        configError: "Erreur de configuration", configDesc: "AZURE_CLIENT_ID non configuré.",
+        configSteps: "Étapes :", configStep1: "Exécuter le script setup.sh pour configurer automatiquement",
+        configStep2: "Ou enregistrer une app dans Azure Portal → Entra ID → Inscriptions d'applications (type SPA)",
+        configStep3: "Ajouter AZURE_CLIENT_ID dans Web App → Paramètres → Paramètres d'application",
+        msalFail: "Échec init MSAL : ", authNotReady: "Auth Azure AD non prête. Vérifiez AZURE_CLIENT_ID.",
+        pollStatus: "⏳ Mise à jour, sondage #{n} dans {t} ({max} au total)",
+        pollChecking: "⏳ Vérification sondage #{n}...",
+        pollMaxReached: "⚠️ Nombre max de sondages atteint. Actualisez la page.",
+        pendingStatus: "⏳ Mise à jour en cours, en attente...",
+        refLabel: "Référence : ",
+    }
+};
+
+function t(key) { return (I18N[currentLang] || I18N["zh-CN"])[key] || (I18N["zh-CN"])[key] || key; }
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    document.documentElement.lang = lang;
+    // Update lang buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${lang}'`));
+    });
+    // Update all data-i18n elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const val = t(key);
+        if (val) el.innerHTML = val;
+    });
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        const val = t(key);
+        if (val) el.placeholder = val;
+    });
+    // Update title
+    document.title = t('pageTitle');
+    // Re-render dynamic elements if active
+    if (document.getElementById('tierPolicy')?.textContent) {
+        const isAuto = document.getElementById('autoUpgradeToggle').checked;
+        document.getElementById('tierPolicy').textContent = isAuto ? t('autoUpgradeEnabled') : t('autoUpgradeDisabled');
+        document.getElementById('toggleLabel').textContent = isAuto ? t('autoUpgrade') : t('autoUpgradeOff');
+    }
+}
 
 let msalInstance = null;
 let msalReady = false;
@@ -802,7 +1040,7 @@ const TIER_DATA = {
 // ========== MSAL Initialization ==========
 async function initMsal() {
     if (!CLIENT_ID) {
-        showConfigError("未配置 AZURE_CLIENT_ID 环境变量。请先运行 setup.sh 或在 Azure Web App 应用设置中配置。");
+        showConfigError(t('configDesc'));
         return;
     }
     try {
@@ -835,20 +1073,20 @@ async function initMsal() {
         }
     } catch (err) {
         console.error("MSAL init failed:", err);
-        showConfigError("MSAL 初始化失败：" + err.message);
+        showConfigError(t('msalFail') + err.message);
     }
 }
 
 function showConfigError(msg) {
     document.getElementById("loginPrompt").querySelector(".login-container").innerHTML = `
-        <h2 style="color:var(--danger);">配置错误</h2>
+        <h2 style="color:var(--danger);">${t('configError')}</h2>
         <p style="color:var(--danger); margin-bottom:16px;">${esc(msg)}</p>
         <div style="text-align:left; max-width:600px; margin:0 auto; background:#faf9f8; padding:20px; border-radius:8px; font-size:14px;">
-            <p><strong>解决步骤：</strong></p>
+            <p><strong>${t('configSteps')}</strong></p>
             <ol style="padding-left:20px; margin-top:8px;">
-                <li>运行项目中的 <code>setup.sh</code> 脚本来自动配置</li>
-                <li>或者在 Azure Portal → Entra ID → App registrations 中注册应用 (SPA 类型)</li>
-                <li>在 Web App → 配置 → 应用程序设置 中添加 <code>AZURE_CLIENT_ID</code></li>
+                <li>${t('configStep1')}</li>
+                <li>${t('configStep2')}</li>
+                <li>${t('configStep3')}</li>
             </ol>
         </div>`;
 }
@@ -864,7 +1102,7 @@ function showLoggedIn(account) {
 }
 
 async function signIn(tenantId) {
-    if (!msalReady) { alert("Azure AD 认证未就绪。请确保已配置 AZURE_CLIENT_ID。"); return; }
+    if (!msalReady) { alert(t('authNotReady')); return; }
     try {
         const authority = `https://login.microsoftonline.com/${tenantId}`;
         const loginResp = await msalInstance.loginPopup({
@@ -875,7 +1113,7 @@ async function signIn(tenantId) {
         accessToken = loginResp.accessToken;
         showLoggedIn(loginResp.account);
     } catch (err) {
-        if (err.errorCode !== "user_cancelled") alert("登录失败：" + err.message);
+        if (err.errorCode !== "user_cancelled") alert(t('loginFail') + err.message);
     }
 }
 
@@ -907,7 +1145,7 @@ async function loadSubscriptions() {
     try {
         const data = await azureGet("https://management.azure.com/subscriptions?api-version=2022-12-01");
         const sel = document.getElementById("subscriptionSelect");
-        sel.innerHTML = '<option value="">-- 请选择订阅 --</option>';
+        sel.innerHTML = `<option value="">${t('selectSubPlaceholder')}</option>`;
         (data.value || []).filter(sub => sub.state === "Enabled").forEach(sub => {
             const opt = document.createElement("option");
             opt.value = sub.subscriptionId;
@@ -915,7 +1153,7 @@ async function loadSubscriptions() {
             sel.appendChild(opt);
         });
     } catch (err) {
-        alert("加载订阅列表失败：" + err.message);
+        alert(t('loadSubFail') + err.message);
     }
 }
 
@@ -933,9 +1171,9 @@ let pendingPolicy = null;
 
 function updatePolicyDisplay(policy) {
     const isAuto = policy !== "NoAutoUpgrade";
-    document.getElementById("tierPolicy").textContent = isAuto ? "自动升级" : "已禁用自动升级";
+    document.getElementById("tierPolicy").textContent = isAuto ? t('autoUpgradeEnabled') : t('autoUpgradeDisabled');
     document.getElementById("autoUpgradeToggle").checked = isAuto;
-    document.getElementById("toggleLabel").textContent = isAuto ? "自动升级" : "已关闭";
+    document.getElementById("toggleLabel").textContent = isAuto ? t('autoUpgrade') : t('autoUpgradeOff');
 }
 
 function setPolicyPending(targetPolicy) {
@@ -946,9 +1184,9 @@ function setPolicyPending(targetPolicy) {
 
     toggle.disabled = true;
     toggle.checked = isAuto;
-    label.textContent = isAuto ? "自动升级" : "已关闭";
+    label.textContent = isAuto ? t('autoUpgrade') : t('autoUpgradeOff');
     status.style.display = "inline";
-    status.textContent = "⏳ 状态更改中，等待生效...";
+    status.textContent = t('pendingStatus');
     pendingPolicy = targetPolicy;
 }
 
@@ -976,18 +1214,18 @@ function startPolicyPolling(subId, targetPolicy) {
         pollCount++;
         if (pollCount > maxPolls) {
             stopPolicyPolling();
-            document.getElementById("toggleStatus").textContent = "⚠️ 已达最大轮询次数，请刷新页面查看最新状态";
+            document.getElementById("toggleStatus").textContent = t('pollMaxReached');
             document.getElementById("autoUpgradeToggle").disabled = false;
             return;
         }
         const delay = Math.min(pollCount * baseInterval, maxInterval);
         const mins = Math.floor(delay / 60000);
         const secs = (delay % 60000) / 1000;
-        const timeStr = secs > 0 ? `${mins}分${secs}秒` : `${mins}分钟`;
-        document.getElementById("toggleStatus").textContent = `⏳ 状态更改中，第${pollCount}次查询将在${timeStr}后（共${maxPolls}次）`;
+        const timeStr = secs > 0 ? `${mins}m${secs}s` : `${mins}m`;
+        document.getElementById("toggleStatus").textContent = t('pollStatus').replace('{n}', pollCount).replace('{t}', timeStr).replace('{max}', maxPolls);
 
         policyPollTimer = setTimeout(async () => {
-            document.getElementById("toggleStatus").textContent = `⏳ 正在查询第${pollCount}次...`;
+            document.getElementById("toggleStatus").textContent = t('pollChecking').replace('{n}', pollCount);
             try {
                 const data = await azureGet(
                     `https://management.azure.com/subscriptions/${encodeURIComponent(subId)}/providers/Microsoft.CognitiveServices/quotaTiers/default?api-version=2025-10-01-preview`
@@ -1037,7 +1275,7 @@ async function toggleUpgradePolicy() {
         // PATCH 成功，开始轮询等待实际生效
         startPolicyPolling(subId, newPolicy);
     } catch (err) {
-        alert("更新升级策略失败：" + err.message);
+        alert(t('updatePolicyFail') + err.message);
         // 恢复原状
         stopPolicyPolling();
         const revertPolicy = newPolicy === "NoAutoUpgrade" ? "OnceUpgradeIsAvailable" : "NoAutoUpgrade";
@@ -1081,7 +1319,7 @@ async function loadTierInfo(subscriptionId) {
     } catch (err) {
         loading.classList.add("hidden");
         if (err.message.includes("404") || err.message.includes("NotFound")) {
-            document.getElementById("tierBadgeText").textContent = "未分配";
+            document.getElementById("tierBadgeText").textContent = t('notAssigned');
             document.getElementById("tierPolicy").textContent = "—";
             document.getElementById("tierSubId").textContent = subscriptionId;
             detectedTier = null;
@@ -1090,7 +1328,7 @@ async function loadTierInfo(subscriptionId) {
             buildTierTabs();
             renderRefTable();
         } else {
-            error.innerHTML = `<div class="error">查询 Tier 失败：${esc(err.message)}</div>`;
+            error.innerHTML = `<div class="error">${t('tierQueryFail')}${esc(err.message)}</div>`;
             error.classList.remove("hidden");
             // Still show reference table
             currentRefTier = 1;
@@ -1217,7 +1455,7 @@ async function loadLiveQuota(subscriptionId) {
         loading.classList.add("hidden");
     } catch (err) {
         loading.classList.add("hidden");
-        error.innerHTML = `<div class="error">查询实时配额失败：${esc(err.message)}</div>`;
+        error.innerHTML = `<div class="error">${t('liveQueryFail')}${esc(err.message)}</div>`;
         error.classList.remove("hidden");
     }
 }
@@ -1236,7 +1474,7 @@ async function loadLiveFromAccounts(subscriptionId) {
 
         if (oaiAccounts.length === 0) {
             loading.classList.add("hidden");
-            empty.textContent = "该订阅下未找到 Azure OpenAI / AI Services 资源。";
+            empty.textContent = t('noResource');
             empty.classList.remove("hidden");
             return;
         }
@@ -1260,7 +1498,7 @@ async function loadLiveFromAccounts(subscriptionId) {
 
         if (liveQuotaData.length === 0) {
             loading.classList.add("hidden");
-            empty.textContent = "该订阅下未找到 AOAI 部署。请确认已创建 Azure OpenAI 资源和模型部署。";
+            empty.textContent = t('noDeploy');
             empty.classList.remove("hidden");
             return;
         }
@@ -1270,7 +1508,7 @@ async function loadLiveFromAccounts(subscriptionId) {
         loading.classList.add("hidden");
     } catch (err) {
         loading.classList.add("hidden");
-        error.innerHTML = `<div class="error">查询实时配额失败：${esc(err.message)}</div>`;
+        error.innerHTML = `<div class="error">${t('liveQueryFail')}${esc(err.message)}</div>`;
         error.classList.remove("hidden");
     }
 }
@@ -1278,7 +1516,7 @@ async function loadLiveFromAccounts(subscriptionId) {
 function populateRegionFilter() {
     const regions = [...new Set(liveQuotaData.map(d => d.region))].sort();
     const sel = document.getElementById("liveRegionFilter");
-    sel.innerHTML = '<option value="">全部</option>';
+    sel.innerHTML = `<option value="">${t('all')}</option>`;
     regions.forEach(r => {
         const opt = document.createElement("option");
         opt.value = r;
@@ -1351,6 +1589,7 @@ function esc(str) {
 }
 
 // ========== Init ==========
+setLang(currentLang);
 initMsal();
 </script>
 
