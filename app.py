@@ -1,10 +1,12 @@
 import os
+from datetime import datetime, timezone, timedelta
 from flask import Flask, render_template
 
 app = Flask(__name__)
 
-# Site last-updated time (Beijing UTC+8) – update this when deploying new content
-BUILD_TIME = "2026-04-27 23:27"
+# Build time in Beijing time (UTC+8), captured at startup
+_beijing_tz = timezone(timedelta(hours=8))
+BUILD_TIME = datetime.now(_beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @app.route("/")
