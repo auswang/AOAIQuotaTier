@@ -6,7 +6,7 @@
 
 - Microsoft 账户登录 Azure
 - 选择 Azure 订阅
-- 查看当前订阅 Quota Tier（Tier 1-6）及升级策略
+- 查看当前订阅 Quota Tier（Tier 0-6，含 Free Tier）及升级策略
 - Tier 配额参考表：按 Tier 级别展示所有模型的 RPM/TPM 配额
 - 实时配额使用：查询各区域的实际 quota 使用情况
 - 支持按模型名称、部署类型、区域筛选

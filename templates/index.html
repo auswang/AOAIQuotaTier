@@ -657,6 +657,12 @@ let detectedTier = null;
 
 // ========== Tier Reference Data (from Microsoft Docs) ==========
 const TIER_DATA = {
+    0: [
+        ["gpt-4.1-mini","GlobalStandard","200","200,000"],
+        ["gpt-5-mini","GlobalStandard","500","500,000"],
+        ["o4-mini","GlobalStandard","100","100,000"],
+        ["text-embedding-3-small","GlobalStandard","1000 / 10s","1,000,000"]
+    ],
     1: [
         ["codex-mini","GlobalStandard","1,000","1,000,000"],
         ["computer-use-preview","GlobalStandard","4,500","450,000"],
@@ -1370,7 +1376,7 @@ async function loadTierInfo(subscriptionId) {
         // Auto-select the detected tier in reference tab
         const tierMatch = tierName.match(/(\d+)/);
         const tierNum = tierMatch ? parseInt(tierMatch[1]) : NaN;
-        if (tierNum >= 1 && tierNum <= 6) {
+        if (tierNum >= 0 && tierNum <= 6) {
             detectedTier = tierNum;
             currentRefTier = tierNum;
         } else {
@@ -1408,10 +1414,10 @@ async function loadTierInfo(subscriptionId) {
 function buildTierTabs() {
     const container = document.getElementById("tierTabs");
     container.innerHTML = "";
-    [1, 2, 3, 4, 5, 6].forEach(t => {
+    [0, 1, 2, 3, 4, 5, 6].forEach(t => {
         const el = document.createElement("span");
         el.className = "tier-tab" + (t === currentRefTier ? " active" : "");
-        el.textContent = `Tier ${t}`;
+        el.textContent = t === 0 ? "Tier 0 (Free)" : `Tier ${t}`;
         if (detectedTier === t) el.textContent += " ★";
         el.onclick = () => { currentRefTier = t; buildTierTabs(); renderRefTable(); };
         container.appendChild(el);
