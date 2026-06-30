@@ -257,7 +257,7 @@
                 <span onclick="signIn(AUSTIN_TENANT)" style="cursor:pointer;font-size:11px;color:var(--text-secondary);opacity:0.4;transition:opacity 0.3s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.4'">🐾 woof</span>
             </div>
             <div style="margin-top:20px; color:var(--text-secondary); font-size:13px;">
-                <span data-i18n="refLabel">参考：</span><a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1" target="_blank">Azure OpenAI Quotas and Limits</a>
+                <span data-i18n="refLabel">参考：</span><a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Azure OpenAI Quotas and Limits</a>
             </div>
         </div>
     </div>
@@ -283,7 +283,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2 data-i18n="tierInfo">Quota Tier 信息</h2>
-                    <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=tier1#quota-tiers" target="_blank" data-i18n="learnMore">了解更多 →</a>
+                    <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1#quota-tiers" target="_blank" data-i18n="learnMore">了解更多 →</a>
                 </div>
                 <div class="card-body">
                     <div id="tierLoading" class="loading">
@@ -336,7 +336,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
                             <div class="tier-select-row" id="tierTabs"></div>
                             <div style="font-size:12px; color:var(--text-secondary);" data-i18n="dataSource">
-                                数据来源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a>
+                                数据来源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Microsoft Docs</a>
                                 · 表格列：RPM (请求/分钟) / TPM (Token/分钟)
                             </div>
                         </div>
@@ -443,7 +443,7 @@ const I18N = {
         autoUpgrade: "自动升级", autoUpgradeOff: "已关闭",
         autoUpgradeEnabled: "自动升级", autoUpgradeDisabled: "已禁用自动升级",
         modelQuota: "模型配额详情", tabRef: "Tier 配额参考", tabLive: "实时配额使用",
-        dataSource: '数据来源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · 表格列：RPM (请求/分钟) / TPM (Token/分钟)',
+        dataSource: '数据来源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Microsoft Docs</a> · 表格列：RPM (请求/分钟) / TPM (Token/分钟)',
         filterModel: "筛选模型", filterModelPlaceholder: "输入模型名称...",
         deployType: "部署类型", all: "全部", region: "区域",
         thModel: "模型", thDeployType: "部署类型", thRegion: "区域",
@@ -480,7 +480,7 @@ const I18N = {
         autoUpgrade: "自動升級", autoUpgradeOff: "已關閉",
         autoUpgradeEnabled: "自動升級", autoUpgradeDisabled: "已停用自動升級",
         modelQuota: "模型配額詳情", tabRef: "Tier 配額參考", tabLive: "即時配額使用",
-        dataSource: '資料來源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · 表格欄：RPM (請求/分鐘) / TPM (Token/分鐘)',
+        dataSource: '資料來源：<a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Microsoft Docs</a> · 表格欄：RPM (請求/分鐘) / TPM (Token/分鐘)',
         filterModel: "篩選模型", filterModelPlaceholder: "輸入模型名稱...",
         deployType: "部署類型", all: "全部", region: "區域",
         thModel: "模型", thDeployType: "部署類型", thRegion: "區域",
@@ -517,7 +517,7 @@ const I18N = {
         autoUpgrade: "Auto Upgrade", autoUpgradeOff: "Disabled",
         autoUpgradeEnabled: "Auto Upgrade", autoUpgradeDisabled: "Auto Upgrade Disabled",
         modelQuota: "Model Quota Details", tabRef: "Tier Quota Reference", tabLive: "Live Quota Usage",
-        dataSource: 'Source: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · Columns: RPM (Requests/min) / TPM (Tokens/min)',
+        dataSource: 'Source: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Microsoft Docs</a> · Columns: RPM (Requests/min) / TPM (Tokens/min)',
         filterModel: "Filter Model", filterModelPlaceholder: "Enter model name...",
         deployType: "Deployment Type", all: "All", region: "Region",
         thModel: "Model", thDeployType: "Deployment Type", thRegion: "Region",
@@ -554,7 +554,7 @@ const I18N = {
         autoUpgrade: "自動アップグレード", autoUpgradeOff: "無効",
         autoUpgradeEnabled: "自動アップグレード", autoUpgradeDisabled: "自動アップグレード無効",
         modelQuota: "モデルクォータ詳細", tabRef: "Tier クォータ参照", tabLive: "リアルタイムクォータ使用量",
-        dataSource: 'データソース: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · 列: RPM (リクエスト/分) / TPM (トークン/分)',
+        dataSource: 'データソース: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Microsoft Docs</a> · 列: RPM (リクエスト/分) / TPM (トークン/分)',
         filterModel: "モデルフィルター", filterModelPlaceholder: "モデル名を入力...",
         deployType: "デプロイタイプ", all: "すべて", region: "リージョン",
         thModel: "モデル", thDeployType: "デプロイタイプ", thRegion: "リージョン",
@@ -591,7 +591,7 @@ const I18N = {
         autoUpgrade: "Mise à niveau auto", autoUpgradeOff: "Désactivé",
         autoUpgradeEnabled: "Mise à niveau auto", autoUpgradeDisabled: "Mise à niveau auto désactivée",
         modelQuota: "Détails des quotas", tabRef: "Quotas Tier de référence", tabLive: "Utilisation en temps réel",
-        dataSource: 'Source: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits" target="_blank">Microsoft Docs</a> · Colonnes: RPM (requêtes/min) / TPM (tokens/min)',
+        dataSource: 'Source: <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/foundry/openai/quotas-limits?tabs=bash%2Ctier1" target="_blank">Microsoft Docs</a> · Colonnes: RPM (requêtes/min) / TPM (tokens/min)',
         filterModel: "Filtrer le modèle", filterModelPlaceholder: "Entrer le nom du modèle...",
         deployType: "Type de déploiement", all: "Tous", region: "Région",
         thModel: "Modèle", thDeployType: "Type de déploiement", thRegion: "Région",
