@@ -13,6 +13,18 @@
 
 ## 快速部署
 
+### 配额数据版本
+
+参考表于 **2026-09-30** 根据文末 Microsoft Learn 页面同步，覆盖 Free Tier（Tier 0）和 Tier 1–6，共 538 条记录。
+本次更新包含 GPT-6 系列、GPT-6.1-sol、GPT-image-2.5-flare / sunburst，以及 GPT-5.5 配额修正。
+`gpt-chat-latest` 按版本区分：2026-05-05、2026-05-28、2026-06-24 使用每 1,000 TPM 对应 10 RPM；2026-08-06 使用每 1,000 TPM 对应 1 RPM。
+
+表中的 `/ 10s` 保留官方的每 10 秒请求窗口；`-` 表示未提供 TPM，不代表无限制。
+参考表不是实时配额，已批准的配额增加不会被参考值覆盖。官方正逐步引入订阅级共享配额池，不能将各区域返回的配额简单相加。
+
+现有部署为 `rg-aoai-quota` 中的 `aoai-quota-austin`：
+https://aoai-quota-austin.azurewebsites.net 。更新现有站点应部署代码包，不要重新运行创建资源的 `setup.sh`。
+
 ### 前置条件
 
 - Azure 订阅
