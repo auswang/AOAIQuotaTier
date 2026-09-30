@@ -25,6 +25,11 @@
 现有部署为 `rg-aoai-quota` 中的 `aoai-quota-austin`：
 https://aoai-quota-austin.azurewebsites.net 。更新现有站点应部署代码包，不要重新运行创建资源的 `setup.sh`。
 
+本仓库 Azure 运维使用账号 `shenglinwang@hotmail.com`，目标订阅为 **Visual Studio Enterprise**
+（`1a90ee96-4f81-4465-9d55-4e10c7197869`）。执行 Azure CLI 命令时应显式指定该订阅，不要依赖本机默认订阅。
+正式部署使用仓库已有 GitHub Actions 流程中的 `AZURE_CREDENTIALS` 服务主体凭据；
+个人账号与 CI/CD 部署身份不同，不要替换现有凭据。
+
 ### 前置条件
 
 - Azure 订阅
